@@ -1,0 +1,3 @@
+bsdto/db/*
+.virtualenv
+__pycache__
