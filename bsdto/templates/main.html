@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>BSD.to</title>
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+        <style type="text/css">
+            .header {
+                padding:15px;
+                background-color:#800;
+                color:#fff;
+                margin-bottom:15px;
+            }
+            .btn-default, .btn-default:hover {
+                background:#800;
+                border:0;
+                color:#fff;
+            }
+            .btn-default:hover {
+                background:#a00;
+            }
+            a.preview-url {
+                color:#000;
+                font-size:24px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header clearfix">
+                <nav>
+                    <h1>BSD.to URL shortener</h1>
+                </nav>
+            </div>
+
+            <div class="jumbotron">
+                {% block body %}{% endblock %}
+            </div>
+
+            <footer class="footer">
+                <p>Powered by <a href="http://bsdlabs.io" target="_blank">bsdlabs.io</a> | <strong>Disclaimer:</strong> This service is convenience service and does not guarantee any privacy. Shortened URLs are not hard to guess.</p>
+            </footer>
+        </div>
+    </body>
+</html>

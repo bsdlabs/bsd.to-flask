@@ -35,6 +35,7 @@ from urlparse import urlparse
 
 DBFILE = os.environ.get("BSDTO_DBFILE") or "/tmp/bsdto.db.sqlite3"
 ID_EPOCH = 100
+INVALID_MSG = "The URL you're trying to shorten is invalid or not allowed!"
 
 re_freebsd = re.compile(r"^http(s)?://(www\.)?freebsd\.org")
 
@@ -100,6 +101,12 @@ def db_select(url_id):
     return res.fetchone() if res else None
 
 
+def url_load(short):
+    url_id = base62_decode(short) - ID_EPOCH
+    data = db_select(url_id)
+    return data[1] if data is not None else None
+
+
 ###############################################################################
 # VIEWS
 ###############################################################################
@@ -116,11 +123,13 @@ def view_index():
 
         # Limit to allowed domains only until we figure out auth
         if not re_freebsd.match(url):
-            return flask.redirect(flask.url_for("view_preview_url", short="invalid"))
+            redir = flask.url_for("view_preview_url", short="invalid")
+            return flask.redirect(redir, code=303)
 
         url_id = db_insert(url)
         short = base62_encode(url_id + ID_EPOCH)
-        return flask.redirect(flask.url_for("view_preview_url", short=short))
+        redir = flask.url_for("view_preview_url", short=short)
+        return flask.redirect(redir, code=303)
 
     return flask.render_template("index.html")
 
@@ -132,23 +141,30 @@ def view_preview_url(short):
     """
     # Simple hack that doesn't require inter-page states, sessions, etc...
     if short == "invalid":
-        return flask.render_template("index.html",
-                                     invalid=True)
+        return flask.render_template("error.html", message=INVALID_MSG)
+    goto_url = url_load(short)
+
+    if goto_url is None:
+        flask.abort(404)
 
     preview_url = flask.url_for("view_url", short=short, _external=True)
-    return flask.render_template("index.html",
-                                 preview_url=preview_url)
+    return flask.render_template("preview.html", preview_url=preview_url)
 
 
 @app.route("/<short>")
 def view_url(short):
     """ Actual redirector from shortened URL to real URL. """
-    url_id = base62_decode(short) - ID_EPOCH
-    data = db_select(url_id)
-    if data is None:
+    goto_url = url_load(short)
+
+    if goto_url is None:
         flask.abort(404)
-    goto_url = data[1]
-    return flask.redirect(goto_url)
+
+    return flask.redirect(goto_url, code=302)
+
+
+@app.errorhandler(404)
+def handle_404(error):
+    return flask.render_template("error.html", message=INVALID_MSG)
 
 
 ###############################################################################
