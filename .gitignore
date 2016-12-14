@@ -1,3 +1,4 @@
 bsdto/db/*
 .virtualenv
+*.egg-info
 __pycache__
